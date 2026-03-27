@@ -10,7 +10,7 @@ from snowflake.snowpark.functions import col
 st.title(':cup_with_straw: Customize Your Smoothie! :cup_with_straw:')
 st.write("Choose the fruits you want in your custom Smoothie!")
 
-# Get name
+# Name input
 
 name_on_order = st.text_input('Name on Smoothie')
 st.write('The name on Smoothie is:', name_on_order)
@@ -20,7 +20,7 @@ st.write('The name on Smoothie is:', name_on_order)
 cnx = st.connection("snowflake")
 session = cnx.session()
 
-# Get fruit options including SEARCH_ON column
+# Get fruit options with SEARCH_ON column
 
 my_dataframe = session.table('smoothies.public.fruit_options')
 .select(col('FRUIT_NAME'), col('SEARCH_ON'))
@@ -29,7 +29,7 @@ my_dataframe = session.table('smoothies.public.fruit_options')
 
 pd_df = my_dataframe.to_pandas()
 
-# Multiselect for ingredients
+# Multiselect ingredient picker
 
 ingredients_list = st.multiselect(
 'Choose up to 5 ingredients:',
@@ -37,7 +37,7 @@ pd_df['FRUIT_NAME'],
 max_selections=5
 )
 
-# If user selects ingredients
+# If ingredients are selected
 
 if ingredients_list:
 
@@ -48,15 +48,15 @@ for fruit_chosen in ingredients_list:
 
     ingredients_string += fruit_chosen + ' '
 
-    # Get API search value using SEARCH_ON column
+    # Get API search value from SEARCH_ON column
     search_on = pd_df.loc[
         pd_df['FRUIT_NAME'] == fruit_chosen,
         'SEARCH_ON'
     ].iloc[0]
 
-    st.subheader(fruit_chosen + " Nutrition Information")
+    st.subheader(fruit_chosen + ' Nutrition Information')
 
-    # Call API using SEARCH_ON value
+    # API call
     smoothiefroot_response = requests.get(
         "https://my.smoothiefroot.com/api/fruit/" + search_on
     )
@@ -68,10 +68,10 @@ for fruit_chosen in ingredients_list:
 
 st.write(ingredients_string)
 
-# Insert order into Snowflake
+# SQL insert statement
 my_insert_stmt = f"""
-INSERT INTO smoothies.public.orders(ingredients, name_on_order)
-VALUES ('{ingredients_string.strip()}', '{name_on_order}')
+    INSERT INTO smoothies.public.orders(ingredients, name_on_order)
+    VALUES ('{ingredients_string.strip()}', '{name_on_order}')
 """
 
 time_to_insert = st.button('Submit Order')
