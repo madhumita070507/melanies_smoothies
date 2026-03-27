@@ -20,16 +20,18 @@ st.write('The name on Smoothie is:', name_on_order)
 cnx = st.connection("snowflake")
 session = cnx.session()
 
-# Get fruit options with SEARCH_ON column
+# Get fruit options including SEARCH_ON column
 
-my_dataframe = session.table('smoothies.public.fruit_options')
-.select(col('FRUIT_NAME'), col('SEARCH_ON'))
+my_dataframe = session.table('smoothies.public.fruit_options').select(
+col('FRUIT_NAME'),
+col('SEARCH_ON')
+)
 
 # Convert Snowflake dataframe to pandas dataframe
 
 pd_df = my_dataframe.to_pandas()
 
-# Multiselect ingredient picker
+# Multiselect for ingredients
 
 ingredients_list = st.multiselect(
 'Choose up to 5 ingredients:',
@@ -68,7 +70,7 @@ for fruit_chosen in ingredients_list:
 
 st.write(ingredients_string)
 
-# SQL insert statement
+# Insert order into Snowflake
 my_insert_stmt = f"""
     INSERT INTO smoothies.public.orders(ingredients, name_on_order)
     VALUES ('{ingredients_string.strip()}', '{name_on_order}')
